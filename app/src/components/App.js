@@ -5,21 +5,21 @@ import { Magic } from "magic-sdk";
 import Shitcoins from './TokenList'
 import TokenList from "./TokenList";
 
+const USDC_ADDRESS = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'
+
 export default ({ drizzle, drizzleState, initialized }) => {
   const [addresses, setAddresses] = useState(null);
   const [usdcBal, setUsdcBal] = useState(0);
 
   useEffect(() => { 
     async function fetchData() {
-      const addresses = await drizzle.contracts.SimpleStorage.methods.addresses().call()
-      setAddresses(addresses)
+      // const addresses = await drizzle.contracts.SimpleStorage.methods.addresses().call()
+      // setAddresses(addresses)
 
       const myAccount = (await drizzle.web3.eth.getAccounts())[0];
-      console.log(`myAccount: ${myAccount}`)
       const usdcBal = await drizzle.contracts.USDC.methods.balanceOf(myAccount).call()
       const usdcDecimals = await drizzle.contracts.USDC.methods.decimals().call()
       setUsdcBal(usdcBal / 10**usdcDecimals)
-      console.log(`usdc bal: ${(usdcBal / 10**usdcDecimals)}`)
     }
 
     async function magicLink() {
@@ -29,10 +29,11 @@ export default ({ drizzle, drizzleState, initialized }) => {
       console.log(isLoggedIn)
     }
 
-    magicLink();
+    // magicLink();
 
     if(initialized) {
-      const usdcContract = new drizzle.web3.eth.Contract(erc20Abi.abi, "0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b")
+      console.log('initialized, fetch USDC')
+      const usdcContract = new drizzle.web3.eth.Contract(erc20Abi.abi, USDC_ADDRESS)
       drizzle.addContract({ contractName: "USDC", web3Contract: usdcContract })
 
       fetchData();    
@@ -56,7 +57,7 @@ export default ({ drizzle, drizzleState, initialized }) => {
           <button className="rounded px-2 py-1 bg-white text-black cursor-pointer w-full lg:w-1/3" onClick={handleTopUp}>Top Up</button>
         </div>
 
-        <TokenList setUsdcBal={setUsdcBal}/>
+        <TokenList setUsdcBal={setUsdcBal} drizzle={drizzle} drizzleState={drizzleState} initialized={initialized}/>
       </>
     </div>
   );
