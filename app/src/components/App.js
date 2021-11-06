@@ -38,7 +38,7 @@ export default ({ drizzle, drizzleState, initialized }) => {
         <img src="./brrrrr.png"/>
       : */}
       <>
-        <h1 className="font-bold text-3xl text-light-green">brrrrr Finance</h1>
+        <h1 className="font-bold text-3xl text-light-green">💸 brrrrr finance 💸</h1>
         <div className="flex mt-4 items-center flex-wrap">
           <h2 className="text-white text-2xl font-bold w-1/2 lg:w-1/3">Balance</h2>
           <h2 className="text-white text-2xl text-white w-1/2 lg:w-1/3">{usdcBal} USDC</h2>
