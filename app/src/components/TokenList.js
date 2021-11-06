@@ -14,7 +14,10 @@ export default ({ drizzle, drizzleState, initialized }) => {
   // }
 
   const initTokens = {
-    "0x8A1D5E9189e23B79e193AE69386f2cc43a12DCd7": null
+    "0x8A1D5E9189e23B79e193AE69386f2cc43a12DCd7": null,
+    "0x6d91d94a3a327b13b369797821307efda9b28a8e": null,
+    "0x20390573D9041e9dbFE19446662799a35501546f": null,
+    "0x9315ABD2D21196d1Ed767A63C2BAdaCC3ee3f64f": null,
   }
   const [tokens, setTokens] = useState(initTokens);
 
