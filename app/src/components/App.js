@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { newContextComponents } from "@drizzle/react-components";
-import logo from "./logo.png";
-import erc20Abi from './contracts/ERC20.json'
+// import erc20Abi from '../contracts/ERC20.json'
 
 const { AccountData, ContractData, ContractForm } = newContextComponents;
 
@@ -10,21 +9,18 @@ export default ({ drizzle, drizzleState }) => {
 
   React.useEffect(() => {
     async function fetchData() {
-      const addresses = await drizzle.contracts.SimpleStorage.methods.addresses().call()
-      setAddresses(addresses)
+      // const addresses = await drizzle.contracts.SimpleStorage.methods.addresses().call()
+      // setAddresses(addresses)
     }
-    fetchData();
+    // fetchData();
   });
 
   return (
-    <div className="App">
-      <div className="section">
-        <h2>buy meme tokens</h2>
-        
-        { addresses && addresses.map(address => 
+    <div className="w-3/5 mx-auto bg-light-main rounded p-4">
+      <h1 className="font-bold text-3xl text-light-green">BRRR FINANCE</h1>
+      { addresses && addresses.map(address => 
           <p>{address}</p>
-        )}
-      </div>
+      )}
     </div>
   );
 };
