@@ -6,8 +6,8 @@ export default ({ drizzle, drizzleState, initialized }) => {
   React.useEffect(() => {
     const tokensMock = [
       {name: 'IzumuInu', contract: '0xbedb8258687fb5216e66ab91150d22abc44751c2', 'pair': '0x09ac5a1a7f0f1ed08fdf15bb7ff5f8536ad0d15f', price: '$0.09299149', bal: 0}
-      ,{name: 'IzumuInu2', contract: '0xbedb8258687fb5216e66ab91150d22abc44751c2', 'pair': '0x09ac5a1a7f0f1ed08fdf15bb7ff5f8536ad0d15f', price: '$0.19299149', bal: 100}
-      ,{name: 'IzumuIn3', contract: '0xbedb8258687fb5216e66ab91150d22abc44751c2', 'pair': '0x09ac5a1a7f0f1ed08fdf15bb7ff5f8536ad0d15f', price: '$0.29299149', bal: 1000000000}
+      ,{name: 'SDOGEX', contract: '0x1bd32d05247071a08a1817575aa248aef8484501', 'pair': '0x49f3ae4fce8cf1d402f411e7bc391b981fb1c2d4', price: '$0.0000006995', bal: 100}
+      ,{name: 'KIZASHI INU', contract: '0xee85de97e98e22163fbfbf2a5a34cf638ef22e71', 'pair': '0x29a370ef2fabe382ab1202f26df7c32756c1b86b', price: '$0.00000002625', bal: 1000000000}
     ]
   
     setTokens(tokensMock)
@@ -40,9 +40,9 @@ export default ({ drizzle, drizzleState, initialized }) => {
               <h1 className="text-light-green ml-auto md:ml-0">{token.price}</h1>
               <a className="ml-auto text-sm underline cursor-pointer hidden md:block" href={`https://www.dextools.io/app/ether/pair-explorer/${token.pair}`}>Chart</a> 
             </div>
-            <div className="flex items-center mt-2">
-              <h1 className="mr-2 font-bold text-grey-560">Balance</h1>
-              <h1 className="">{token.bal}</h1>
+            <div className="flex items-center mt-2 text-white">
+              <h1 className="mr-2">Balance</h1>
+              <h1 className="font-bold">{token.bal}</h1>
 
               <div className="ml-auto hidden md:flex">
                 <button className="bg-white text-black mr-2 py-1 px-2 rounded" onClick={() => handleApe(token)}>Ape</button>

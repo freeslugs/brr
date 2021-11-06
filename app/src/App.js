@@ -14,7 +14,7 @@ const App = () => {
         {drizzleContext => {
           const { drizzle, drizzleState, initialized } = drizzleContext;
           return (
-            <div className="min-h-screen min-w-screen bg-main px-2 md:px-6 py-4">
+            <div className="min-h-screen min-w-screen bg-main px-2 md:px-6 py-4 relative">
               <Main drizzle={drizzle} drizzleState={drizzleState} initialized={initialized} />
             </div>
           )
