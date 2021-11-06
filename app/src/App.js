@@ -13,14 +13,9 @@ const App = () => {
       <DrizzleContext.Consumer>
         {drizzleContext => {
           const { drizzle, drizzleState, initialized } = drizzleContext;
-
-          // if (!initialized) {
-          //   return "Loading..."
-          // }
-
           return (
             <div className="min-h-screen min-w-screen bg-main px-6 py-4">
-              <Main drizzle={drizzle} drizzleState={drizzleState} />
+              <Main drizzle={drizzle} drizzleState={drizzleState} initialized={initialized} />
             </div>
           )
         }}
