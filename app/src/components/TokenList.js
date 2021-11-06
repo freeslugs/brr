@@ -1,17 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { ChainId, UniswapPair } from 'simple-uniswap-sdk';
+
+const USDC_ADDRESS = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'
 
 export default ({ drizzle, drizzleState, initialized }) => {
-  const [tokens, setTokens] = useState(null);
 
-  React.useEffect(() => {
-    const tokensMock = [
-      {name: 'IzumuInu', contract: '0xbedb8258687fb5216e66ab91150d22abc44751c2', 'pair': '0x09ac5a1a7f0f1ed08fdf15bb7ff5f8536ad0d15f', price: '$0.09299149', bal: 0}
-      ,{name: 'SDOGEX', contract: '0x1bd32d05247071a08a1817575aa248aef8484501', 'pair': '0x49f3ae4fce8cf1d402f411e7bc391b981fb1c2d4', price: '$0.0000006995', bal: 100}
-      ,{name: 'KIZASHI INU', contract: '0xee85de97e98e22163fbfbf2a5a34cf638ef22e71', 'pair': '0x29a370ef2fabe382ab1202f26df7c32756c1b86b', price: '$0.00000002625', bal: 1000000000}
-    ]
-  
-    setTokens(tokensMock)
-  }, []);
+  // { 
+  //   "0x8A1D5E9189e23B79e193AE69386f2cc43a12DCd7": { 
+  //     price
+  //     balance
+  //     ...
+  //   }
+  // }
+
+  const initTokens = {
+    "0x8A1D5E9189e23B79e193AE69386f2cc43a12DCd7": null,
+    "0x6d91d94a3a327b13b369797821307efda9b28a8e": null,
+    "0x20390573D9041e9dbFE19446662799a35501546f": null,
+    "0x9315ABD2D21196d1Ed767A63C2BAdaCC3ee3f64f": null,
+  }
+  const [tokens, setTokens] = useState(initTokens);
+
+  useEffect(() => {
+    async function fetchData() {
+      const myAccount = (await drizzle.web3.eth.getAccounts())[0];
+
+      Object.keys(tokens).map(async(address) => {
+        const uniswapPair = new UniswapPair({
+          fromTokenContractAddress: address,
+          toTokenContractAddress: USDC_ADDRESS,
+          ethereumAddress: myAccount,
+          chainId: parseInt(drizzle.web3.currentProvider.chainId)
+        });
+
+        const uniswapPairFactory = await uniswapPair.createFactory();
+        const trade = await uniswapPairFactory.trade('1');
+
+
+        tokens[address] = { 
+          price: trade.minAmountConvertQuote,
+          bal: trade.fromBalance.balance,
+          // name: trade.fromToken.name,
+          name: trade.fromToken.symbol
+        }
+
+        setTokens(tokens)
+        // console.log(tokens)
+
+        // subscribe to quote changes this is just in example so your dont miss it
+        // trade.quoteChanged$.subscribe((value) => {
+        //   console.log(`new value for trade: ${value}`)
+        // });
+      })
+    }
+
+    console.log(`initialized: ${initialized}`)
+    if(initialized) {
+      console.log('initialized, fetch ')
+      fetchData()
+    }
+  }, [initialized]);
 
   const handleApe = token => {
     console.log('LOOK AT THAT GOD CANDLE ', token.contract)
@@ -29,15 +77,21 @@ export default ({ drizzle, drizzleState, initialized }) => {
     console.log('paper hand bitch')
   }
 
+
+  console.log('render')
+
+
   return (
     <div className="w-full mt-6">
       <button className="rounded px-2 py-1 bg-white text-black cursor-pointer w-full lg:w-1/3 mt-2 bg-light-green text-white" onClick={gigaApe}>Giga Ape</button>
-      { tokens && tokens.map(token => {
+      { tokens && Object.keys(tokens).map(address => {
+        const token = tokens[address] || {}
+
         return (
           <div className="rounded bg-gray mt-2 flex-col p-2">
             <div className="text-xl flex text-white">
               <h1 className="mr-4 font-bold">{token.name}</h1>
-              <h1 className="text-light-green ml-auto md:ml-0">{token.price}</h1>
+              <h1 className="text-light-green ml-auto md:ml-0">${token.price}</h1>
               <a className="ml-auto text-sm underline cursor-pointer hidden md:block" href={`https://www.dextools.io/app/ether/pair-explorer/${token.pair}`}>Chart</a> 
             </div>
             <div className="flex items-center mt-2 text-white">

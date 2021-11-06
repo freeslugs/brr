@@ -5,6 +5,7 @@ import { Magic } from "magic-sdk";
 import TokenList from "./TokenList";
 
 const REDIRECT_URI = 'http://localhost:3000/'
+const USDC_ADDRESS = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'
 
 export default ({ drizzle, drizzleState, initialized }) => {
   const [addresses, setAddresses] = useState(null);
@@ -18,15 +19,13 @@ export default ({ drizzle, drizzleState, initialized }) => {
   // http://localhost:3000/?magic_credential=WyIweDczMGJlMGQwZGZkOTEwNmZmMmJiNWIwNzg4NjhmMjc0MGJlNmFmMzExZThiODE2ZWU1YzkyODYzNjYwNDY0MzM3MDY1MjliNDcxMDhmMTUyMmYzMTc3ODkyYTAxODM3ZTEzZTQzOTE1M2Q5ZTY0NWYxNTIyNDU4ZDBiNmE2ZWZmMWIiLCJ7XCJpYXRcIjoxNjM2MzI2Mzc4LFwiZXh0XCI6MTYzNjMyNzI3OCxcImlzc1wiOlwiZGlkOmV0aHI6MHgyZTU3NUVkOTQ3QjI2N0I4ZjhFMGRiY2I5MjNlRjZCYmI5NTBkMzkxXCIsXCJzdWJcIjpcIlZ5MEp4clFTTURhSV9rZ2dJY1FvM2pLaXd5cDhqOWF3ZmtYdGRTUlVfOHM9XCIsXCJhdWRcIjpcInJOZVlYaG52UjBXc29ZczNBckNGYlFYLUUyY19pNjFjV2hlTzdLMF9WQnc9XCIsXCJuYmZcIjoxNjM2MzI2Mzc4LFwidGlkXCI6XCIxODc4NmJiMy01MjE2LTQ0NTctYjkwMi1kMDExNjQzZDg0MGFcIixcImFkZFwiOlwiMHhkZmI5Y2VkZWRkZTQ4MWUxYjFkN2QzNDk4NmQxMjljNjg3ZDdhMWJmMzE4ZDQ0ZGViYzkzYjQwYjVlZWU4ODJiNTA1ZWFmZTc5OWYzNWU2YzhjNmZiNDA1MTZkNTdmNGNhODUyMmVjY2YyYmFiYjcwODM1MTY0ODBlZWM0YzVmODFiXCJ9Il0%3D
   useEffect(() => { 
     async function fetchData() {
-      const addresses = await drizzle.contracts.SimpleStorage.methods.addresses().call()
-      setAddresses(addresses)
+      // const addresses = await drizzle.contracts.SimpleStorage.methods.addresses().call()
+      // setAddresses(addresses)
 
       const myAccount = (await drizzle.web3.eth.getAccounts())[0];
-      console.log(`myAccount: ${myAccount}`)
       const usdcBal = await drizzle.contracts.USDC.methods.balanceOf(myAccount).call()
       const usdcDecimals = await drizzle.contracts.USDC.methods.decimals().call()
       setUsdcBal(usdcBal / 10**usdcDecimals)
-      console.log(`usdc bal: ${(usdcBal / 10**usdcDecimals)}`)
     }
 
     async function magicLink() {
@@ -52,10 +51,11 @@ export default ({ drizzle, drizzleState, initialized }) => {
       }
     }
 
-    magicLink();
+    // magicLink();
 
     if(initialized) {
-      const usdcContract = new drizzle.web3.eth.Contract(erc20Abi.abi, "0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b")
+      console.log('initialized, fetch USDC')
+      const usdcContract = new drizzle.web3.eth.Contract(erc20Abi.abi, USDC_ADDRESS)
       drizzle.addContract({ contractName: "USDC", web3Contract: usdcContract })
 
       fetchData();    
@@ -114,7 +114,7 @@ export default ({ drizzle, drizzleState, initialized }) => {
           <button className="rounded px-2 py-1 bg-white text-black cursor-pointer w-full lg:w-1/3" onClick={handleTopUp}>Top Up</button>
         </div>
 
-        <TokenList setUsdcBal={setUsdcBal}/>
+        <TokenList setUsdcBal={setUsdcBal} drizzle={drizzle} drizzleState={drizzleState} initialized={initialized}/>
       </>
       {/* } */}
     </div>

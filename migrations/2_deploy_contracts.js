@@ -4,6 +4,6 @@ const TutorialToken = artifacts.require("TutorialToken");
 
 module.exports = function(deployer) {
   deployer.deploy(SimpleStorage);
-  deployer.deploy(TutorialToken, 12000);
+  deployer.deploy(TutorialToken, web3.utils.toBN("10050000000000000000000000"));
   // deployer.deploy(ComplexStorage);
 };
