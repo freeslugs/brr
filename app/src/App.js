@@ -2,7 +2,7 @@ import React from "react";
 import { DrizzleContext } from "@drizzle/react-plugin";
 import { Drizzle } from "@drizzle/store";
 import drizzleOptions from "./drizzleOptions";
-import MyComponent from "./MyComponent";
+import Main from "./components/App";
 import "./App.css";
 
 const drizzle = new Drizzle(drizzleOptions);
@@ -13,13 +13,10 @@ const App = () => {
       <DrizzleContext.Consumer>
         {drizzleContext => {
           const { drizzle, drizzleState, initialized } = drizzleContext;
-
-          if (!initialized) {
-            return "Loading..."
-          }
-
           return (
-            <MyComponent drizzle={drizzle} drizzleState={drizzleState} />
+            <div className="min-h-screen min-w-screen bg-main px-6 py-4">
+              <Main drizzle={drizzle} drizzleState={drizzleState} initialized={initialized} />
+            </div>
           )
         }}
       </DrizzleContext.Consumer>
