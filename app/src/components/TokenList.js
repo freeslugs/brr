@@ -20,16 +20,18 @@ export default ({ drizzle, drizzleState, initialized }) => {
     "0x9315ABD2D21196d1Ed767A63C2BAdaCC3ee3f64f": null,
   }
   const [tokens, setTokens] = useState(initTokens);
+  const [myAccount, setAccount] = useState(null)
 
   useEffect(() => {
     async function fetchData() {
-      const myAccount = (await drizzle.web3.eth.getAccounts())[0];
+      const account = (await drizzle.web3.eth.getAccounts())[0];
+      setAccount(account)
 
       Object.keys(tokens).map(async(address) => {
         const uniswapPair = new UniswapPair({
           fromTokenContractAddress: address,
           toTokenContractAddress: USDC_ADDRESS,
-          ethereumAddress: myAccount,
+          ethereumAddress: account,
           chainId: parseInt(drizzle.web3.currentProvider.chainId)
         });
 
@@ -41,11 +43,11 @@ export default ({ drizzle, drizzleState, initialized }) => {
           price: trade.minAmountConvertQuote,
           bal: trade.fromBalance.balance,
           // name: trade.fromToken.name,
-          name: trade.fromToken.symbol
+          name: trade.fromToken.symbol,
+          address: address
         }
 
         setTokens(tokens)
-        // console.log(tokens)
 
         // subscribe to quote changes this is just in example so your dont miss it
         // trade.quoteChanged$.subscribe((value) => {
@@ -54,19 +56,32 @@ export default ({ drizzle, drizzleState, initialized }) => {
       })
     }
 
-    console.log(`initialized: ${initialized}`)
+    // console.log(`initialized: ${initialized}`)
     if(initialized) {
-      console.log('initialized, fetch ')
+      // console.log('initialized, fetch ')
       fetchData()
     }
   }, [initialized]);
 
-  const handleApe = token => {
-    console.log('LOOK AT THAT GOD CANDLE ', token.contract)
+  const handleApe = async (token) => {
+    console.log('LOOK AT THAT GOD CANDLE ', token.address)
+    const uniswapPair = new UniswapPair({
+      fromTokenContractAddress: USDC_ADDRESS,
+      toTokenContractAddress: token.address,
+      ethereumAddress: myAccount,
+      chainId: parseInt(drizzle.web3.currentProvider.chainId)
+    });
+
+    const uniswapPairFactory = await uniswapPair.createFactory();
+    const trade = await uniswapPairFactory.trade(1);
+    // console.log(uniswapPairFactory)
+    // console.log(trade.minAmountConvertQuote)
+    console.log(`trade.minAmountConvertQuote: ${trade.minAmountConvertQuote}`)
+
   }
 
   const handleRug = token => {
-    console.log('YEEOAAAAAAAAOWWWW IT WENT TO ZERO ', token.contract)
+    console.log('YEEOAAAAAAAAOWWWW IT WENT TO ZERO ', token.address)
   }
 
   const gigaApe = () => {
@@ -76,9 +91,6 @@ export default ({ drizzle, drizzleState, initialized }) => {
   const paperHand = () => {
     console.log('paper hand bitch')
   }
-
-
-  console.log('render')
 
 
   return (
@@ -112,6 +124,7 @@ export default ({ drizzle, drizzleState, initialized }) => {
         )
         })}
         <button className="rounded px-2 py-1 bg-white text-white cursor-pointer w-full lg:w-1/3 mt-2 bg-red" onClick={paperHand}>Paper Hand</button>
+        <code class="block whitespace-pre overflow-x-scroll">{JSON.stringify(tokens)}</code>
     </div>
   );
 };
