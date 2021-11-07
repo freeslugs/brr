@@ -28,7 +28,7 @@ const Main = () => {
     const usdcContract = new web3.eth.Contract(erc20Abi.abi, USDC_ADDRESS)
     const usdcBal = await usdcContract.methods.balanceOf(myAccount).call()
     const usdcDecimals = await usdcContract.methods.decimals().call()
-    setUsdcBal(usdcBal / 10**usdcDecimals)
+    setUsdcBal((usdcBal / 10**usdcDecimals).toFixed(2))
   }
 
   useEffect(() => {
