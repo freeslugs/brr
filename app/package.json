@@ -10,6 +10,7 @@
     "magic-sdk": "^6.2.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
+    "react-hot-toast": "^2.1.1",
     "react-scripts": "^3.4.4",
     "simple-uniswap-sdk": "^3.6.2",
     "web3": "^1.6.0"

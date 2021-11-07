@@ -8,7 +8,6 @@ import TokenList from "./TokenList";
 const REDIRECT_URI = 'http://localhost:3000/'
 const USDC_ADDRESS = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'
 
-
 const UserDetails = ({user, loadingLogin, setLoginModal}) => {
   const formatAddy = () => {
     // const first5 = user.publicAddress.slice(0, 5)

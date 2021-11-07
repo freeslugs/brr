@@ -12,7 +12,6 @@ const Loading = () =>
     <img src="/brr.png"/>
   </div>
 
-
 const Main = () => {
   const magic = useContext(MagicContext);
   const web3 = useContext(Web3Context);
@@ -23,6 +22,15 @@ const Main = () => {
   const loading = false
   const handleTopUp = null
 
+  async function fetchUsdcBal() {
+    const myAccount = (await web3.eth.getAccounts())[0];
+
+    const usdcContract = new web3.eth.Contract(erc20Abi.abi, USDC_ADDRESS)
+    const usdcBal = await usdcContract.methods.balanceOf(myAccount).call()
+    const usdcDecimals = await usdcContract.methods.decimals().call()
+    setUsdcBal(usdcBal / 10**usdcDecimals)
+  }
+
   useEffect(() => {
     async function fetchMagicLinkUser() {
       const user = await magic.user.getMetadata()
@@ -30,18 +38,8 @@ const Main = () => {
     }
     fetchMagicLinkUser()
 
-    async function fetchUsdcBal() {
-      const myAccount = (await web3.eth.getAccounts())[0];
-
-      const usdcContract = new web3.eth.Contract(erc20Abi.abi, USDC_ADDRESS)
-      const usdcBal = await usdcContract.methods.balanceOf(myAccount).call()
-      const usdcDecimals = await usdcContract.methods.decimals().call()
-      setUsdcBal(usdcBal / 10**usdcDecimals)
-
-    }
     fetchUsdcBal()
   }, [])
-
 
   return (
     <div className="w-full md:w-3/5 mx-auto bg-light-main rounded p-2 md:p-4">
@@ -58,7 +56,7 @@ const Main = () => {
         <button className="rounded px-2 py-1 bg-white text-black cursor-pointer w-full lg:w-1/3" onClick={handleTopUp}>Top Up</button>
       </div>
 
-      <TokenList />
+      <TokenList refreshUSDC={fetchUsdcBal}/>
     </div>
   );
 };

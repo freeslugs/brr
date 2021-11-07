@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
-import { ChainId, UniswapPair } from 'simple-uniswap-sdk';
+import { ChainId, UniswapPair, UniswapPairSettings } from 'simple-uniswap-sdk';
 import { Web3Context, MagicContext } from '../MagicContext';
+import toast, { Toaster } from 'react-hot-toast';
 
 const USDC_ADDRESS = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'
 
-export default () => {
+export default ({ refreshUSDC }) => {
 
   const initTokens = {
     "0x8A1D5E9189e23B79e193AE69386f2cc43a12DCd7": {},
@@ -24,7 +25,8 @@ export default () => {
         fromTokenContractAddress: address,
         toTokenContractAddress: USDC_ADDRESS,
         ethereumAddress: myAccount,
-        chainId: 4 // parseInt(web3.currentProvider.chainId)
+        chainId: 4, // parseInt(web3.currentProvider.chainId)
+        settings: new UniswapPairSettings({ slippage: 0.30 })
       });
 
       const uniswapPairFactory = await uniswapPair.createFactory();
@@ -57,35 +59,84 @@ export default () => {
   }, [])
 
   const handleApe = async (token) => {
-    console.log(`APEing into ${token.name}`)
+    const toast1 = toast(`Aping into ${token.name}`)
     const myAccount = (await web3.eth.getAccounts())[0];
 
     const uniswapPair = new UniswapPair({
       fromTokenContractAddress: USDC_ADDRESS,
       toTokenContractAddress: token.address,
       ethereumAddress: myAccount,
-      chainId: 4 // parseInt(web3.currentProvider.chainId)
+      chainId: 4,
+      settings: new UniswapPairSettings({ slippage: 0.30 })
     });
 
     const uniswapPairFactory = await uniswapPair.createFactory();
     const trade = await uniswapPairFactory.trade(1);
+    toast.dismiss(toast1)
 
     if (trade.approvalTransaction) {
+      const toast3 = toast.loading(`Approving the transfer...`)
       const approved = await web3.eth.sendTransaction(trade.approvalTransaction);
+      toast.dismiss(toast3)
     }
 
-    const tradeTransaction = await web3.eth.sendTransaction(trade.transaction);
-    trade.destroy();
-    fetchTokens()
+    const toast2 = toast.loading(`Sending the transaction.`)
+    try {
+      const tradeTransaction = await web3.eth.sendTransaction(trade.transaction);
+      toast.dismiss(toast2)
+      toast.success(`Just aped into ${token.name}`)
+      trade.destroy();
+      fetchTokens()
+      refreshUSDC()
+    } catch(e) {
+      toast.dismiss(toast2)
+      toast.error(`Can't trade, the slippage is too rough`)
+      trade.destroy();
+    }
   }
 
   const handleRug = async (token) => {
-    console.log(`ape token: ${JSON.stringify(token)}`)
+    const toast1 = toast(`Selling some ${token.name}`)
     const myAccount = (await web3.eth.getAccounts())[0];
+
+    const uniswapPair = new UniswapPair({
+      fromTokenContractAddress: token.address,
+      toTokenContractAddress: USDC_ADDRESS,
+      ethereumAddress: myAccount,
+      chainId: 4,
+      settings: new UniswapPairSettings({ slippage: 0.30 })
+    });
+
+    const uniswapPairFactory = await uniswapPair.createFactory();
+    const trade = await uniswapPairFactory.trade(token.bal / 3);
+    toast.dismiss(toast1)
+
+    if (trade.approvalTransaction) {
+      const toast3 = toast.loading(`Approving the transfer...`)
+      const approved = await web3.eth.sendTransaction(trade.approvalTransaction);
+      toast.dismiss(toast3)
+    }
+
+    const toast2 = toast.loading(`Sending the transaction.`)
+    try {
+      const tradeTransaction = await web3.eth.sendTransaction(trade.transaction);
+
+      toast.dismiss(toast2)
+      toast.success(`Just sold some ${token.name}`)
+      trade.destroy();
+      fetchTokens()
+      refreshUSDC()
+    } catch(e) {
+      toast.dismiss(toast2)
+      toast.error(`Can't trade, the slippage is too rough`)
+      trade.destroy();
+    }
+
   }
 
   return (
     <div className="w-full mt-6">
+      <Toaster />
       <button className="rounded px-2 py-1 bg-white text-black cursor-pointer w-full lg:w-1/3 mt-2 bg-light-green text-white" onClick={'gigaApe'}>Giga Ape</button>
       { tokens && Object.keys(tokens).map(address => {
         const token = tokens[address]
