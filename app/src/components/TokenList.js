@@ -58,86 +58,116 @@ export default ({ refreshUSDC }) => {
     fetchTokens()
   }, [])
 
-  const handleApe = async (token) => {
-    const toast1 = toast(`Aping into ${token.name}`)
-    const myAccount = (await web3.eth.getAccounts())[0];
+  const handleApe = (token) => {
+    return new Promise(async (resolve, reject) => {
+      const toast1 = toast(`Aping into ${token.name}`)
+      const myAccount = (await web3.eth.getAccounts())[0];
 
-    const uniswapPair = new UniswapPair({
-      fromTokenContractAddress: USDC_ADDRESS,
-      toTokenContractAddress: token.address,
-      ethereumAddress: myAccount,
-      chainId: 4,
-      settings: new UniswapPairSettings({ slippage: 0.30 })
+      const uniswapPair = new UniswapPair({
+        fromTokenContractAddress: USDC_ADDRESS,
+        toTokenContractAddress: token.address,
+        ethereumAddress: myAccount,
+        chainId: 4,
+        settings: new UniswapPairSettings({ slippage: 0.30 })
+      });
+
+      const uniswapPairFactory = await uniswapPair.createFactory();
+      const trade = await uniswapPairFactory.trade(1);
+      toast.dismiss(toast1)
+
+      if (trade.approvalTransaction) {
+        const toast3 = toast.loading(`Approving the transfer...`)
+        const approved = await web3.eth.sendTransaction(trade.approvalTransaction);
+        toast.dismiss(toast3)
+      }
+
+      const toast2 = toast.loading(`Sending the transaction.`)
+      try {
+        const tradeTransaction = await web3.eth.sendTransaction(trade.transaction);
+        toast.dismiss(toast2)
+        toast.success(`Just aped into ${token.name}`)
+        trade.destroy();
+        fetchTokens()
+        refreshUSDC()
+        resolve()
+      } catch(e) {
+        toast.dismiss(toast2)
+        toast.error(`Can't trade, the slippage is too rough`)
+        trade.destroy();
+        reject()
+      }
+      
     });
+  }
 
-    const uniswapPairFactory = await uniswapPair.createFactory();
-    const trade = await uniswapPairFactory.trade(1);
-    toast.dismiss(toast1)
+  const handleRug = (token) => {
+    return new Promise(async (resolve, reject) => {
+      const toast1 = toast(`Selling some ${token.name}`)
+      const myAccount = (await web3.eth.getAccounts())[0];
 
-    if (trade.approvalTransaction) {
-      const toast3 = toast.loading(`Approving the transfer...`)
-      const approved = await web3.eth.sendTransaction(trade.approvalTransaction);
-      toast.dismiss(toast3)
-    }
+      const uniswapPair = new UniswapPair({
+        fromTokenContractAddress: token.address,
+        toTokenContractAddress: USDC_ADDRESS,
+        ethereumAddress: myAccount,
+        chainId: 4,
+        settings: new UniswapPairSettings({ slippage: 0.30 })
+      });
 
-    const toast2 = toast.loading(`Sending the transaction.`)
-    try {
-      const tradeTransaction = await web3.eth.sendTransaction(trade.transaction);
-      toast.dismiss(toast2)
-      toast.success(`Just aped into ${token.name}`)
-      trade.destroy();
-      fetchTokens()
-      refreshUSDC()
-    } catch(e) {
-      toast.dismiss(toast2)
-      toast.error(`Can't trade, the slippage is too rough`)
-      trade.destroy();
+      const uniswapPairFactory = await uniswapPair.createFactory();
+      const max = token.bal / 3
+      const min = (1/token.price)
+      const trade = await uniswapPairFactory.trade(Math.max(min, max));
+      toast.dismiss(toast1)
+
+      if (trade.approvalTransaction) {
+        const toast3 = toast.loading(`Approving the transfer...`)
+        const approved = await web3.eth.sendTransaction(trade.approvalTransaction);
+        toast.dismiss(toast3)
+      }
+
+      const toast2 = toast.loading(`Sending the transaction.`)
+      try {
+        const tradeTransaction = await web3.eth.sendTransaction(trade.transaction);
+
+        toast.dismiss(toast2)
+        toast.success(`Just sold some ${token.name}`)
+        trade.destroy();
+        fetchTokens()
+        refreshUSDC()
+        resolve()
+      } catch(e) {
+        toast.dismiss(toast2)
+        toast.error(`Can't trade, the slippage is too rough`)
+        trade.destroy();
+        reject()
+      }
+    })
+  }
+
+  const gigaApe = async () => {
+    const toast1 = toast(`🐒 Aping into all the tokens 🐒`)
+
+    const addresses = Object.keys(tokens)
+    for (const address in addresses) {
+      const token = tokens[address]
+      await handleApe(token)
     }
   }
 
-  const handleRug = async (token) => {
-    const toast1 = toast(`Selling some ${token.name}`)
-    const myAccount = (await web3.eth.getAccounts())[0];
+  const paperHand = async () => {
+    const toast1 = toast(`🏳️ Selling some of all the tokens 🏳️`)
 
-    const uniswapPair = new UniswapPair({
-      fromTokenContractAddress: token.address,
-      toTokenContractAddress: USDC_ADDRESS,
-      ethereumAddress: myAccount,
-      chainId: 4,
-      settings: new UniswapPairSettings({ slippage: 0.30 })
-    });
-
-    const uniswapPairFactory = await uniswapPair.createFactory();
-    const trade = await uniswapPairFactory.trade(token.bal / 3);
-    toast.dismiss(toast1)
-
-    if (trade.approvalTransaction) {
-      const toast3 = toast.loading(`Approving the transfer...`)
-      const approved = await web3.eth.sendTransaction(trade.approvalTransaction);
-      toast.dismiss(toast3)
+    const addresses = Object.keys(tokens)
+    for (const address in addresses) {
+      const token = tokens[address]
+      await handleRug(token)
     }
-
-    const toast2 = toast.loading(`Sending the transaction.`)
-    try {
-      const tradeTransaction = await web3.eth.sendTransaction(trade.transaction);
-
-      toast.dismiss(toast2)
-      toast.success(`Just sold some ${token.name}`)
-      trade.destroy();
-      fetchTokens()
-      refreshUSDC()
-    } catch(e) {
-      toast.dismiss(toast2)
-      toast.error(`Can't trade, the slippage is too rough`)
-      trade.destroy();
-    }
-
   }
 
   return (
     <div className="w-full mt-6">
       <Toaster />
-      <button className="rounded px-2 py-1 bg-white text-black cursor-pointer w-full lg:w-1/3 mt-2 bg-light-green text-white" onClick={'gigaApe'}>Giga Ape</button>
+      <button className="rounded px-2 py-1 bg-white text-black cursor-pointer w-full lg:w-1/3 mt-2 bg-light-green text-white" onClick={gigaApe}>Giga Ape</button>
       { tokens && Object.keys(tokens).map(address => {
         const token = tokens[address]
 
@@ -159,13 +189,13 @@ export default ({ refreshUSDC }) => {
             </div>
             <div className="w-full flex md:hidden items-center">
             <a className="text-sm text-white underline cursor-pointer block md:hidden" href={`https://www.dextools.io/app/ether/pair-explorer/${token.pair}`}>Chart</a> 
-              <button className="bg-white text-black mr-2 py-1 px-2 rounded ml-auto" /*onClick={() => handleApe(token)}*/>Ape</button>
-              <button className="bg-white text-black py-1 px-2 rounded ml-2" /*onClick={() => handleRug(token)}*/>Rug</button>
+              <button className="bg-white text-black mr-2 py-1 px-2 rounded ml-auto" onClick={() => handleApe(token)}>Ape</button>
+              <button className="bg-white text-black py-1 px-2 rounded ml-2" onClick={() => handleRug(token)}>Rug</button>
             </div>
           </div>
         )
       })}
-      <button className="rounded px-2 py-1 bg-white text-white cursor-pointer w-full lg:w-1/3 mt-2 bg-red" /*onClick={paperHand}*/>Paper Hand</button>
+      <button className="rounded px-2 py-1 bg-white text-white cursor-pointer w-full lg:w-1/3 mt-2 bg-red" onClick={paperHand}>Paper Hand</button>
     </div>
   );
 }
