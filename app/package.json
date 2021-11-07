@@ -10,7 +10,9 @@
     "magic-sdk": "^6.2.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
-    "react-scripts": "^3.4.4"
+    "react-scripts": "^3.4.4",
+    "simple-uniswap-sdk": "^3.6.2",
+    "web3": "^1.6.0"
   },
   "scripts": {
     "start": "craco start",
