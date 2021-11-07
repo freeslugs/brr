@@ -7,6 +7,28 @@ import TokenList from "./TokenList";
 const REDIRECT_URI = 'http://localhost:3000/'
 const USDC_ADDRESS = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'
 
+
+const UserDetails = ({user, loadingLogin, setLoginModal}) => {
+  const formatAddy = () => {
+    const first5 = user.publicAddress.slice(0, 5)
+    const last4 = user.publicAddress.slice(-4)
+    return `${first5}....${last4}`
+  }
+
+  if (user) {
+    return (
+      <div className="">
+        <h1 className="font-bold text-orange">{user.email}</h1>
+        <h1 className="font-bold text-orange">{formatAddy()}</h1>
+      </div>
+    )
+  }
+
+  if (loadingLogin) return <h1 className="font-bold text-orange">Loading your data, anon...</h1>
+
+  return <button className="rounded px-2 py-1 bg-white text-black cursor-pointer w-full lg:w-1/3" onClick={() => setLoginModal(true)}>Login</button>
+}
+
 export default ({ drizzle, drizzleState, initialized }) => {
   const [addresses, setAddresses] = useState(null);
   const [usdcBal, setUsdcBal] = useState(0);
@@ -15,6 +37,7 @@ export default ({ drizzle, drizzleState, initialized }) => {
   const [email, setEmail] = useState('')
   const [user, setUser] = useState(null)
   const magic = new Magic('pk_live_925E22A1B237DBBB')
+  const [loadingLogin, setLoadingLogin] = useState(true)
 
   // http://localhost:3000/?magic_credential=WyIweDczMGJlMGQwZGZkOTEwNmZmMmJiNWIwNzg4NjhmMjc0MGJlNmFmMzExZThiODE2ZWU1YzkyODYzNjYwNDY0MzM3MDY1MjliNDcxMDhmMTUyMmYzMTc3ODkyYTAxODM3ZTEzZTQzOTE1M2Q5ZTY0NWYxNTIyNDU4ZDBiNmE2ZWZmMWIiLCJ7XCJpYXRcIjoxNjM2MzI2Mzc4LFwiZXh0XCI6MTYzNjMyNzI3OCxcImlzc1wiOlwiZGlkOmV0aHI6MHgyZTU3NUVkOTQ3QjI2N0I4ZjhFMGRiY2I5MjNlRjZCYmI5NTBkMzkxXCIsXCJzdWJcIjpcIlZ5MEp4clFTTURhSV9rZ2dJY1FvM2pLaXd5cDhqOWF3ZmtYdGRTUlVfOHM9XCIsXCJhdWRcIjpcInJOZVlYaG52UjBXc29ZczNBckNGYlFYLUUyY19pNjFjV2hlTzdLMF9WQnc9XCIsXCJuYmZcIjoxNjM2MzI2Mzc4LFwidGlkXCI6XCIxODc4NmJiMy01MjE2LTQ0NTctYjkwMi1kMDExNjQzZDg0MGFcIixcImFkZFwiOlwiMHhkZmI5Y2VkZWRkZTQ4MWUxYjFkN2QzNDk4NmQxMjljNjg3ZDdhMWJmMzE4ZDQ0ZGViYzkzYjQwYjVlZWU4ODJiNTA1ZWFmZTc5OWYzNWU2YzhjNmZiNDA1MTZkNTdmNGNhODUyMmVjY2YyYmFiYjcwODM1MTY0ODBlZWM0YzVmODFiXCJ9Il0%3D
   useEffect(() => { 
@@ -34,6 +57,7 @@ export default ({ drizzle, drizzleState, initialized }) => {
       if (isLoggedIn) {
         const user = await magic.user.getMetadata()
         setUser(user)
+        setLoadingLogin(false)
       } else {
         const query = window?.location?.search
         const [, magicCred] = query.split('magic_credential=')
@@ -42,16 +66,19 @@ export default ({ drizzle, drizzleState, initialized }) => {
           try {
             const user = await magic.auth.loginWithCredential(magicCred)
             setUser(user)
+            setLoadingLogin(false)
           } catch (e) {
-            setLoginModal(true)  
+            setLoginModal(true)
+            setLoadingLogin(false)
           }
         } else {
           setLoginModal(true)
+          setLoadingLogin(false)
         }
       }
     }
 
-    // magicLink();
+    magicLink()
 
     if(initialized) {
       console.log('initialized, fetch USDC')
@@ -80,33 +107,19 @@ export default ({ drizzle, drizzleState, initialized }) => {
     setEmail(e.target.value)
   }
 
-  console.log('user: ', user)
-  const formatAddy = () => {
-    const first5 = user.publicAddress.slice(0, 5)
-    const last4 = user.publicAddress.slice(-4)
-    return `${first5}....${last4}`
-  }
-
   return (
     <>
     <div className="w-full md:w-3/5 mx-auto bg-light-main rounded p-2 md:p-4">
-      {/* { !initialized ? 
+      { !initialized ? 
         <div className="w-full flex flex-col items-center content-center">
           <h1 className="text-white"> haha money printer loading</h1>
           <img 
             src="/brr.png"/>
         </div>
-      : */}
+      :
       <>
         <h1 className="font-bold text-3xl text-light-green">💸 brrrrr finance 💸</h1>
-        { user ?
-          <div className="flex flex-col">
-            <h1 className="rounded-lg p-1 border-2 border-white">{formatAddy()}</h1>
-            <h1 className="rounded-lg p-1">{user.email}</h1>
-          </div>
-          : 
-          <button className="rounded px-2 py-1 bg-white text-black cursor-pointer w-full lg:w-1/3" onClick={() => setLoginModal(true)}>Login</button>
-        }
+        <UserDetails user={user} loadingLogin={loadingLogin} setLoginModal={setLoginModal}/>
 
         <div className="flex mt-4 items-center w-full flex-wrap">
           <h2 className="text-white text-2xl font-bold w-1/2 lg:w-1/3">Balance</h2>
@@ -116,7 +129,7 @@ export default ({ drizzle, drizzleState, initialized }) => {
 
         <TokenList setUsdcBal={setUsdcBal} drizzle={drizzle} drizzleState={drizzleState} initialized={initialized}/>
       </>
-      {/* } */}
+      }
     </div>
 
     {topModal ?

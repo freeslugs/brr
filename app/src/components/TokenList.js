@@ -44,6 +44,7 @@ export default ({ drizzle, drizzleState, initialized }) => {
           name: trade.fromToken.symbol
         }
 
+
         setTokens(tokens)
         // console.log(tokens)
 
@@ -78,7 +79,7 @@ export default ({ drizzle, drizzleState, initialized }) => {
   }
 
 
-  console.log('render')
+  console.log('render: ', tokens)
 
 
   return (
